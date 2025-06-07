@@ -41,14 +41,23 @@ const Video = mongoose.model('Video', videoSchema);
 app.post('/upload', upload.single('video'), async (req, res) => {
   try {
     const { title } = req.body;
+
+    if (!req.file) {
+      console.error('No file received in request');
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
     const videoUrl = `/uploads/${req.file.filename}`;
     const newVideo = new Video({ title, videoUrl });
     await newVideo.save();
+
     res.status(201).json({ message: 'Video uploaded successfully', video: newVideo });
   } catch (error) {
-    res.status(500).json({ error: 'Server error' });
+    console.error('Upload error:', error); // ✅ See actual error in terminal
+    res.status(500).json({ error: 'Server error', details: error.message });
   }
 });
+
 
 app.get('/videos', async (req, res) => {
   try {
